@@ -6,12 +6,12 @@ import { redirect } from 'next/navigation';
 import { storePost, updatePostLikeStatus } from '@/lib/posts';
 import { uploadImage } from '@/lib/cloudinary';
 
-export async function createPost(prevState, formData) {
-  const title = formData.get('title');
-  const image = formData.get('image');
-  const content = formData.get('content');
+export async function createPost(prevState, formData: FormData) {
+  const title: string = formData.get('title');
+  const image:string = formData.get('image');
+  const content:string = formData.get('content');
 
-  let errors = [];
+  const errors: string[] = [];
 
   if (!title || title.trim().length === 0) {
     errors.push('Title is required.');
@@ -50,7 +50,7 @@ export async function createPost(prevState, formData) {
   redirect('/feed');
 }
 
-export async function togglePostLikeStatus(postId) {
+export async function togglePostLikeStatus(postId: number) {
   await updatePostLikeStatus(postId, 2);
   revalidatePath('/', 'layout');
 }

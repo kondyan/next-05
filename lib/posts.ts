@@ -1,4 +1,5 @@
 import sql from 'better-sqlite3';
+import {Post} from "@/Types/Types";
 
 const db = new sql('posts.db')
 
@@ -56,7 +57,7 @@ function initDb() {
 
 initDb();
 
-export async function getPosts(maxNumber) {
+export async function getPosts(maxNumber: number): Promise<Post[]> {
   let limitClause = '';
 
   if (maxNumber) {
@@ -76,7 +77,7 @@ export async function getPosts(maxNumber) {
   return maxNumber ? stmt.all(maxNumber) : stmt.all();
 }
 
-export async function storePost(post) {
+export async function storePost(post: Post) {
   const stmt = db.prepare(`
     INSERT INTO posts (image_url, title, content, user_id)
     VALUES (?, ?, ?, ?)`);
@@ -84,13 +85,13 @@ export async function storePost(post) {
   return stmt.run(post.imageUrl, post.title, post.content, post.userId);
 }
 
-export async function updatePostLikeStatus(postId, userId) {
+export async function updatePostLikeStatus(postId: Post, userId: number) {
   const stmt = db.prepare(`
     SELECT COUNT(*) AS count
     FROM likes
     WHERE user_id = ? AND post_id = ?`);
 
-  const isLiked = stmt.get(userId, postId).count === 0;
+  const isLiked: boolean = stmt.get(userId, postId).count === 0;
 
   if (isLiked) {
     const stmt = db.prepare(`
