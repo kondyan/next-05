@@ -2,6 +2,15 @@ import sql from 'better-sqlite3';
 
 const db = new sql('posts.db')
 
+/**
+ * Initializes the database.
+ *
+ * This function creates the database tables (`users`, `posts`, `likes`) if they don't exist
+ * and seeds the `users` table with initial data if it's empty.
+ *
+ * It is called automatically when this module is first loaded.
+ * @description something
+ */
 function initDb() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
