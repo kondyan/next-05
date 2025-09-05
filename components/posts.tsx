@@ -5,12 +5,31 @@ import { useOptimistic } from "react";
 import { formatDate } from "@/lib/format";
 import LikeButton from "./like-icon";
 import { togglePostLikeStatus } from "@/actions/posts";
+import Image from "next/image";
 
-function Post({ post, action }) {
+interface Post {
+  id: number;
+  image: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  userFirstName: string;
+  userLastName: string;
+  likes: number;
+  isLiked: boolean;
+}
+
+function Post({
+  post,
+  action,
+}: {
+  post: Post;
+  action: (postId: number) => void;
+}) {
   return (
     <article className="post">
       <div className="post-image">
-        <img src={post.image} alt={post.title} />
+        <Image src={post.image} fill alt={post.title} />
       </div>
       <div className="post-content">
         <header>
@@ -19,7 +38,7 @@ function Post({ post, action }) {
             <p>
               Shared by {post.userFirstName} on{" "}
               <time dateTime={post.createdAt}>
-                {formatDate(post.createdAt)}
+                {formatDate(new Date(post.createdAt))}
               </time>
             </p>
           </div>
@@ -38,12 +57,12 @@ function Post({ post, action }) {
   );
 }
 
-export default function Posts({ posts }) {
+export default function Posts({ posts }: { posts: Post[] }) {
   const [optimisticPosts, updateOptimisticPosts] = useOptimistic(
     posts,
     (prevPosts, updatedPostId) => {
       const updatedPostIndex = prevPosts.findIndex(
-        (post) => post.id === updatedPostId,
+        (post) => post.id === updatedPostId
       );
 
       if (updatedPostIndex === -1) {
@@ -56,14 +75,14 @@ export default function Posts({ posts }) {
       const newPosts = [...prevPosts];
       newPosts[updatedPostIndex] = updatedPost;
       return newPosts;
-    },
+    }
   );
 
   if (!optimisticPosts || optimisticPosts.length === 0) {
     return <p>There are no posts yet. Maybe start sharing some?</p>;
   }
 
-  async function updatePost(postId) {
+  async function updatePost(postId: number) {
     updateOptimisticPosts(postId);
     await togglePostLikeStatus(postId);
   }
