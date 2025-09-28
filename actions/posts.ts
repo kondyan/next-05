@@ -7,9 +7,9 @@ import { storePost, updatePostLikeStatus } from "@/lib/posts";
 import { uploadImage } from "@/lib/cloudinary";
 
 export async function createPost(prevState: unknown, formData: FormData) {
-  const title: FormDataEntryValue | null | string = formData.get("title");
-  const image: FormDataEntryValue | null | string = formData.get("image");
-  const content: FormDataEntryValue | null | string = formData.get("content");
+  const title = formData.get("title") as string;
+  const image = formData.get("image") as File;
+  const content = formData.get("content") as string;
 
   const errors: string[] = [];
 
@@ -33,7 +33,7 @@ export async function createPost(prevState: unknown, formData: FormData) {
 
   try {
     imageUrl = await uploadImage(image);
-  } catch (error) {
+  } catch {
     throw new Error(
       "Image upload failed, post was not created. Please try again later.",
     );

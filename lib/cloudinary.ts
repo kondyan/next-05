@@ -1,15 +1,15 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from "cloudinary";
 
 if (!process.env.CLOUDINARY_CLOUD_NAME) {
-  throw new Error('CLOUDINARY_CLOUD_NAME is not set');
+  throw new Error("CLOUDINARY_CLOUD_NAME is not set");
 }
 
 if (!process.env.CLOUDINARY_API_KEY) {
-  throw new Error('CLOUDINARY_API_KEY is not set');
+  throw new Error("CLOUDINARY_API_KEY is not set");
 }
 
 if (!process.env.CLOUDINARY_API_SECRET) {
-  throw new Error('CLOUDINARY_API_SECRET is not set');
+  throw new Error("CLOUDINARY_API_SECRET is not set");
 }
 
 cloudinary.config({
@@ -18,14 +18,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function uploadImage(image: string) {
+export async function uploadImage(image: File) {
   const imageData = await image.arrayBuffer();
   const mime = image.type;
-  const encoding = 'base64';
-  const base64Data = Buffer.from(imageData).toString('base64');
-  const fileUri = 'data:' + mime + ';' + encoding + ',' + base64Data;
+  const encoding = "base64";
+  const base64Data = Buffer.from(imageData).toString("base64");
+  const fileUri = "data:" + mime + ";" + encoding + "," + base64Data;
   const result = await cloudinary.uploader.upload(fileUri, {
-    folder: 'nextjs-course-mutations',
+    folder: "nextjs-course-mutations",
   });
   return result.secure_url;
 }

@@ -1,6 +1,19 @@
-import Posts from '@/components/posts';
-import { getPosts } from '@/lib/posts';
-import {Post} from "@/Types/Types";
+import Posts from "@/components/posts";
+import { getPosts } from "@/lib/posts";
+
+interface Post {
+  id: number;
+  userFirstName?: string;
+  userLastName?: string;
+  email?: string;
+  image: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  userId: number;
+  likes: number;
+  isLiked: boolean;
+}
 
 export default async function FeedPage() {
   const posts: Post[] = await getPosts(5);
