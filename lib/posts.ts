@@ -1,26 +1,61 @@
 import sql from 'better-sqlite3';
-import {Post} from "@/Types/Types";
 
-const db = new sql('posts.db')
+const db = new sql('posts.db');
 
-/**
- * Initializes the database.
- *
- * This function creates the database tables (`users`, `posts`, `likes`) if they don't exist
- * and seeds the `users` table with initial data if it's empty.
- *
- * It is called automatically when this module is first loaded.
- * @description something
- */
+export interface User {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+}
+
+export interface Post {
+    id: number;
+    image_url: string;
+    title: string;
+    content: string,
+    created_at: string,
+    user_id: number,
+}
+
+export interface PostResponseDto  {
+    id: number;
+    userFirstName?: string;
+    userLastName?: string;
+    email?: string;
+    image: string;
+    title: string;
+    content: string,
+    createdAt: string,
+    userId: number,
+    likes: number,
+    isLiked: boolean,
+}
+
+
+export interface PostDto {
+    imageUrl: string;
+    title: string;
+    content: string,
+    userId: number,
+
+}
+
+export interface Likes {
+    post_id: number;
+    user_id: number;
+}
+
+
 function initDb() {
-  db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY, 
       first_name TEXT, 
       last_name TEXT,
       email TEXT
     )`);
-  db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY, 
       image_url TEXT NOT NULL,
@@ -30,7 +65,7 @@ function initDb() {
       user_id INTEGER, 
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     )`);
-  db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS likes (
       user_id INTEGER, 
       post_id INTEGER, 
@@ -39,32 +74,32 @@ function initDb() {
       FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE
     )`);
 
-  // Creating two dummy users if they don't exist already
-  const stmt = db.prepare('SELECT COUNT(*) AS count FROM users');
+    // Creating two dummy users if they don't exist already
+    const stmt = db.prepare<[],{count:number}>('SELECT COUNT(*) AS count FROM users');
 
-  if (stmt.get().count === 0) {
-    db.exec(`
+    if (stmt.get()?.count === 0) {
+        db.exec(`
     INSERT INTO users (first_name, last_name, email)
     VALUES ('John', 'Doe', 'john@example.com')
   `);
 
-    db.exec(`
+        db.exec(`
     INSERT INTO users (first_name, last_name, email)
     VALUES ('Max', 'Schwarz', 'max@example.com')
   `);
-  }
+    }
 }
 
 initDb();
 
-export async function getPosts(maxNumber: number): Promise<Post[]> {
-  let limitClause = '';
+export async function getPosts(maxNumber?: number) {
+    let limitClause = '';
 
-  if (maxNumber) {
-    limitClause = 'LIMIT ?';
-  }
+    if (maxNumber) {
+        limitClause = 'LIMIT ?';
+    }
 
-  const stmt = db.prepare(`
+    const stmt = db.prepare<[number?],PostResponseDto>(`
     SELECT posts.id, image_url AS image, title, content, created_at AS createdAt, first_name AS userFirstName, last_name AS userLastName, COUNT(likes.post_id) AS likes, EXISTS(SELECT * FROM likes WHERE likes.post_id = posts.id and likes.user_id = 2) AS isLiked
     FROM posts
     INNER JOIN users ON posts.user_id = users.id
@@ -73,37 +108,37 @@ export async function getPosts(maxNumber: number): Promise<Post[]> {
     ORDER BY createdAt DESC
     ${limitClause}`);
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return maxNumber ? stmt.all(maxNumber) : stmt.all();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return maxNumber ? stmt.all(maxNumber) : stmt.all();
 }
 
-export async function storePost(post: Post) {
-  const stmt = db.prepare(`
+export async function storePost(post: PostDto) {
+    const stmt = db.prepare<[string, string, string, number],Post>(`
     INSERT INTO posts (image_url, title, content, user_id)
     VALUES (?, ?, ?, ?)`);
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return stmt.run(post.imageUrl, post.title, post.content, post.userId);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return stmt.run(post.imageUrl, post.title, post.content, post.userId);
 }
 
-export async function updatePostLikeStatus(postId: Post, userId: number) {
-  const stmt = db.prepare(`
+export async function updatePostLikeStatus(postId: number, userId: number) {
+    const stmt = db.prepare<[number,number], {count: number}>(`
     SELECT COUNT(*) AS count
     FROM likes
     WHERE user_id = ? AND post_id = ?`);
 
-  const isLiked: boolean = stmt.get(userId, postId).count === 0;
+    const isLiked = stmt.get(userId, postId)?.count === 0;
 
-  if (isLiked) {
-    const stmt = db.prepare(`
+    if (isLiked) {
+        const stmt = db.prepare<[number,number], Likes>(`
       INSERT INTO likes (user_id, post_id)
       VALUES (?, ?)`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return stmt.run(userId, postId);
-  } else {
-    const stmt = db.prepare(`
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return stmt.run(userId, postId);
+    } else {
+        const stmt = db.prepare<[number,number], Likes>(`
       DELETE FROM likes
       WHERE user_id = ? AND post_id = ?`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return stmt.run(userId, postId);
-  }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return stmt.run(userId, postId);
+    }
 }

@@ -8,3 +8,4 @@ export type Post = {
     likes: number,
     is_liked: boolean
 }
+
