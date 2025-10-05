@@ -19,6 +19,7 @@ cloudinary.config({
 });
 
 export async function uploadImage(image: File) {
+  console.log(image);
   const imageData = await image.arrayBuffer();
   const mime = image.type;
   const encoding = "base64";
